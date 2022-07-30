@@ -3,6 +3,7 @@ package main
 import "testing"
 import "fmt"
 import "net"
+import "os"
 
 func TestClosure(t *testing.T) {
 	f := fibonacci()
@@ -12,6 +13,7 @@ func TestClosure(t *testing.T) {
 }
 
 func TestIp(t *testing.T) {
-	ips, error := net.LookupIP("fedora-yld")
-	fmt.Printf("%v %v\n", ips, error)
+	hn, _ := os.Hostname()
+	ips, _ := net.LookupIP(hn)
+	fmt.Printf("%v\n", ips)
 }
