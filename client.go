@@ -15,7 +15,6 @@ func client() {
 		log.Fatalln(err)
 	}
 	name := MakeName()
-	fmt.Printf("login %s%s using name: %s\n", serverIp, serverPort, name)
 	chat(name, conn)
 }
 
@@ -39,8 +38,16 @@ func MakeName() string {
 }
 
 func chat(name string, conn net.Conn) {
-	fmt.Printf("Peer's name: ")
 	input := bufio.NewScanner(os.Stdin)
+
+	fmt.Printf("Your name(default %s): ", name)
+	input.Scan()
+	if buf := input.Text(); buf != "" {
+		name = buf
+	}
+	fmt.Printf("login %s%s using name: %s\n", serverIp, serverPort, name)
+
+	fmt.Printf("Peer's name: ")
 	input.Scan()
 	peer := input.Text()
 	fmt.Printf("Chat with peer: %s\n", peer)
@@ -81,7 +88,7 @@ func chat(name string, conn net.Conn) {
 			}
 		case receiveData := <-connCh:
 			receiveMsg.Decode(receiveData)
-			buf := fmt.Sprintf("%s: %s", receiveMsg.Name, string(receiveMsg.Body))
+			buf := fmt.Sprintf("%s: %s", receiveMsg.SourceName, string(receiveMsg.Body))
 			fmt.Println(buf)
 		}
 	}

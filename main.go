@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	serverIp   = "127.0.0.1"
+	serverIp   = "47.107.108.217"
 	serverPort = ":1234"
 	MAXINPUT   = 1024
 )
