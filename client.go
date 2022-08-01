@@ -46,6 +46,7 @@ func chat(name string, conn net.Conn) {
 	fmt.Printf("Chat with peer: %s\n", peer)
 
 	var connCh chan []byte = make(chan []byte)
+	var inputCh chan string = make(chan string)
 	go func() {
 		for {
 			var data []byte = make([]byte, MAXINPUT)
@@ -58,28 +59,28 @@ func chat(name string, conn net.Conn) {
 			}
 		}
 	}()
+	go func() {
+		input := bufio.NewScanner(os.Stdio)
+		for input.Scan() {
+			inputCh <- input.Text()
+		}
+	}()
 
 	sendMsg := message.SendMsg{
 		Name:       name,
 		TargetName: peer,
 	}
-	for input.Scan() {
-		sendMsg.Body = []byte(input.Text())
-		data := sendMsg.Encode()
-		_, err := conn.Write(data)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
+	for {
 		var receiveMsg message.ReceiveMsg
 		select {
-		case data = <-connCh:
-			receiveMsg.Decode(data)
-		default:
-			receiveMsg.Body = []byte{}
-		}
-
-		if len(receiveMsg.Body) > 0 {
+		case sendMsg.Body = <-inputCh:
+			data := sendMsg.Encode()
+			_, err := conn.Write(data)
+			if err != nil {
+				log.Fatalln(err)
+			}
+		case receiveData = <-connCh:
+			receiveMsg.Decode(receiveData)
 			buf := fmt.Sprintf("%s: %s", receiveMsg.Name, string(receiveMsg.Body))
 			fmt.Println(buf)
 		}
