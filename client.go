@@ -7,11 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 )
-
-const serverIp = "127.0.0.1"
-const serverPort = ":1234"
 
 func client() {
 	conn, err := net.Dial("tcp", serverIp+serverPort)
@@ -43,21 +39,23 @@ func MakeName() string {
 }
 
 func chat(name string, conn net.Conn) {
+	fmt.Printf("Peer's name: ")
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
 	peer := input.Text()
 	fmt.Printf("Chat with peer: %s\n", peer)
 
-	var connCh chan []byte
+	var connCh chan []byte = make(chan []byte)
 	go func() {
-		const MAXINPUT = 1024
-		var data []byte = make([]byte, MAXINPUT)
-		_, err := conn.Read(data)
-		if err != nil {
-			connCh <- data
-		} else {
-			close(connCh)
-			log.Fatal(err)
+		for {
+			var data []byte = make([]byte, MAXINPUT)
+			n, err := conn.Read(data)
+			if err != nil {
+				close(connCh)
+				log.Fatal(err)
+			} else {
+				connCh <- data[:n]
+			}
 		}
 	}()
 
@@ -77,7 +75,7 @@ func chat(name string, conn net.Conn) {
 		select {
 		case data = <-connCh:
 			receiveMsg.Decode(data)
-		case <-time.After(50 * time.Millisecond):
+		default:
 			receiveMsg.Body = []byte{}
 		}
 

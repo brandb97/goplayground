@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"goplay/database"
 	"goplay/message"
 	"log"
@@ -11,7 +12,7 @@ import (
 var userDatabase database.DB
 
 func server() {
-	ln, err := net.Listen("tcp", ":8000")
+	ln, err := net.Listen("tcp", serverPort)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -26,21 +27,22 @@ func server() {
 }
 
 func handleConnection(conn net.Conn) {
-	const MAXBUF = 1024
-	var buf []byte = make([]byte, MAXBUF)
+	const MAXINPUT = 1024
+	var buf []byte = make([]byte, MAXINPUT)
 	var msg message.SendMsg
 
-	_, err := conn.Read(buf)
+	n, err := conn.Read(buf)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	msg.Decode(buf)
+	msg.Decode(buf[:n])
 	userDatabase.AddUser(msg.Name, &conn)
+	fmt.Printf("%s log in\n", msg.Name)
+
 	for err == nil {
 		for !userDatabase.HasUser(msg.TargetName) {
 			time.Sleep(50 * time.Millisecond)
 		}
-
 		targetConn := *userDatabase.UsertoConn(msg.TargetName)
 		rmsg := message.ReceiveMsg{
 			Name:       msg.TargetName,
@@ -50,8 +52,8 @@ func handleConnection(conn net.Conn) {
 		rbuf := rmsg.Encode()
 		_, err = targetConn.Write(rbuf)
 
-		_, err = conn.Read(buf)
-		msg.Decode(buf)
+		n, err = conn.Read(buf)
+		msg.Decode(buf[:n])
 	}
 	userDatabase.DeleteUser(msg.Name)
 }

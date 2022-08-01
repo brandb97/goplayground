@@ -1,6 +1,8 @@
-client: client.go main.go
-	go build main.go client.go -o client
-server: pipeserver.go main.go
-	go build main.go pipeserver.go -o server
+client: main.go client.go pipeserver.go
+	go build main.go client.go pipeserver.go
+	mv main client
+server: main.go pipeserver.go
+	go build main.go client.go pipeserver.go
+	mv main server
 clean:
 	rm server client
