@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 )
 
 const (
@@ -12,9 +13,9 @@ const (
 
 func main() {
 	switch {
-	case os.Args[0] == "./client":
+	case strings.HasSuffix(os.Args[0], "client"):
 		client()
-	case os.Args[0] == "./server":
+	case strings.HasSuffix(os.Args[0], "server"):
 		server()
 	}
 }
