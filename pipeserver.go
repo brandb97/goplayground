@@ -37,11 +37,8 @@ func handleConnection(conn net.Conn) {
 		log.Fatalln(err)
 	}
 	msg.Decode(buf[:n])
-	if !userDatabase.HasUser(msg.Name) {
-		userDatabase.AddUser(msg.Name, &conn)
-		fmt.Printf("%s log in\n", msg.Name)
-		return
-	}
+	userDatabase.AddUser(msg.Name, &conn)
+	fmt.Printf("%s log in\n", msg.Name)
 
 	for err == nil {
 		for !userDatabase.HasUser(msg.TargetName) {
@@ -53,8 +50,10 @@ func handleConnection(conn net.Conn) {
 			SourceName: msg.Name,
 			Body:       msg.Body,
 		}
-		rbuf := rmsg.Encode()
-		_, err = targetConn.Write(rbuf)
+		if len(rmsg.Body) != 0 {
+			rbuf := rmsg.Encode()
+			_, err = targetConn.Write(rbuf)
+		}
 
 		n, err = conn.Read(buf)
 		msg.Decode(buf[:n])
