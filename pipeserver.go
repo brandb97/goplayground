@@ -20,7 +20,8 @@ func server() {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Println(err)
+			continue
 		}
 		go handleConnection(conn)
 	}
@@ -36,8 +37,11 @@ func handleConnection(conn net.Conn) {
 		log.Fatalln(err)
 	}
 	msg.Decode(buf[:n])
-	userDatabase.AddUser(msg.Name, &conn)
-	fmt.Printf("%s log in\n", msg.Name)
+	if !userDatabase.HasUser(msg.Name) {
+		userDatabase.AddUser(msg.Name, &conn)
+		fmt.Printf("%s log in\n", msg.Name)
+		return
+	}
 
 	for err == nil {
 		for !userDatabase.HasUser(msg.TargetName) {

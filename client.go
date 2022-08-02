@@ -77,6 +77,7 @@ func chat(name string, conn net.Conn) {
 		Name:       name,
 		TargetName: peer,
 	}
+	conn.Write(sendMsg.Encode())
 	for {
 		var receiveMsg message.ReceiveMsg
 		select {
