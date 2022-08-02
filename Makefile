@@ -6,3 +6,4 @@ server: main.go pipeserver.go
 	mv main server
 clean:
 	rm server client
+all: server client

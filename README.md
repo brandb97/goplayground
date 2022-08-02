@@ -9,5 +9,6 @@ make server
 ```
 
 ```
+make all
 make clean
 ```
